@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 
 const GuidedMeditation = () => {
   const [videos, setVideos] = useState([]);
-  const [visibleVideos, setVisibleVideos] = useState(6); // State to control how many videos are visible
-  const API_KEY = 'AIzaSyCCnH_K33Amctxw3cj5NQBdvwNtXUmzJJs'; // Replace with your YouTube API key
-  const searchQuery = 'guided meditation'; // YouTube search term for meditation videos
-  const totalResults = 30; // Total videos to fetch (6 initially displayed, then 3 more)
-  
+  const [visibleVideos, setVisibleVideos] = useState(6); // How many videos are visible initially
+  // Use the Gemini API key from the environment variable
+  const API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+  const searchQuery = 'guided meditation';
+  const totalResults = 30; // Total videos to fetch
+
   useEffect(() => {
-    // Fetch meditation videos from YouTube API
+    if (!API_KEY) {
+      console.error('API Key is missing! Please set REACT_APP_GEMINI_API_KEY in your .env file.');
+      return;
+    }
+    // Fetch guided meditation videos from YouTube API using the API key
     fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${totalResults}&q=${searchQuery}&type=video&key=${API_KEY}`
     )
@@ -19,7 +24,7 @@ const GuidedMeditation = () => {
       .catch((error) => {
         console.error('Error fetching videos:', error);
       });
-  }, []);
+  }, [API_KEY]);
 
   const showMoreVideos = () => {
     setVisibleVideos((prevVisible) => prevVisible + 3); // Show 3 more videos on each click
