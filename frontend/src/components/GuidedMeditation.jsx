@@ -2,24 +2,26 @@ import React, { useEffect, useState } from 'react';
 
 const GuidedMeditation = () => {
   const [videos, setVideos] = useState([]);
-  const [visibleVideos, setVisibleVideos] = useState(6); // How many videos are visible initially
-  // Use the Gemini API key from the environment variable
-  const API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+  const [visibleVideos, setVisibleVideos] = useState(6);
+  const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY; // Loaded from .env
   const searchQuery = 'guided meditation';
-  const totalResults = 30; // Total videos to fetch
-
+  const totalResults = 30;
+  
   useEffect(() => {
     if (!API_KEY) {
-      console.error('API Key is missing! Please set REACT_APP_GEMINI_API_KEY in your .env file.');
+      console.error('API Key is missing! Please set REACT_APP_YOUTUBE_API_KEY in your .env file.');
       return;
     }
-    // Fetch guided meditation videos from YouTube API using the API key
     fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${totalResults}&q=${searchQuery}&type=video&key=${API_KEY}`
     )
       .then((response) => response.json())
       .then((data) => {
-        setVideos(data.items);
+        if (data.items) {
+          setVideos(data.items);
+        } else {
+          console.error('No video items found in the response:', data);
+        }
       })
       .catch((error) => {
         console.error('Error fetching videos:', error);
@@ -27,7 +29,7 @@ const GuidedMeditation = () => {
   }, [API_KEY]);
 
   const showMoreVideos = () => {
-    setVisibleVideos((prevVisible) => prevVisible + 3); // Show 3 more videos on each click
+    setVisibleVideos((prevVisible) => prevVisible + 3);
   };
 
   return (
@@ -64,7 +66,7 @@ const GuidedMeditation = () => {
                   {video.snippet.channelTitle}
                 </p>
                 <p className="text-gray-600 text-sm">
-                  {video.snippet.description.slice(0, 100)}...
+                  {video.snippet.description?.slice(0, 100) || ""}...
                 </p>
               </div>
             </a>
@@ -72,7 +74,6 @@ const GuidedMeditation = () => {
         ))}
       </div>
 
-      {/* Show More Button */}
       {visibleVideos < videos.length && (
         <div className="flex justify-center mt-12">
           <button
